@@ -8,5 +8,3 @@ if z == '-':
     print(a - b)
 f z == '*' :
     print(a * b)
-if z == '/':
-    print(a / b)
