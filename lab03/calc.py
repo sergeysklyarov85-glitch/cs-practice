@@ -1,6 +1,8 @@
 a = float(input('Введите первое число: '))
+z = input('Введите знак')
 b = float(input('Введите второе число: '))
 
-S = a + b
-
-print('Результат:', S)
+if z == '+':
+    print(a + b)
+if z == '-':
+    print(a - b)
