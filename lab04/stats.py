@@ -1,85 +1,87 @@
 def parse_record(line: str) -> dict:
-"""
-Разбирает строку «город;температура;дата» в словарь.
-Если строка негодная — возбуждает ValueError.
-"""
-parts = line.split(";")
+    """
+    Разбирает строку «город;температура;дата» в словарь.
+    Если строка негодная — возбуждает ValueError.
+    """
+    parts = line.split(";")
 
-# 1. Проверяем количество полей
-if len(parts) != 3:
-raise ValueError(f"Неверное количество полей (ожидалось 3, получено {len(parts)}): '{line}'")
+    if len(parts) != 3:
+        raise ValueError(f"Неверное количество полей: '{line}'")
 
-city, temp_str, date = parts
+    city, temp_str, date = parts
 
-# 2. Проверяем, что город или дата не пустые
-if not city.strip() or not date.strip():
-raise ValueError(f"Город или дата не могут быть пустыми: '{line}'")
+    if not city.strip() or not date.strip():
+        raise ValueError(f"Город или дата пусты: '{line}'")
 
-# 3. Проверяем корректность температуры
-try:
-temp = float(temp_str)
-except ValueError:
-raise ValueError(f"Некорректный формат температуры '{temp_str}': '{line}'")
+    try:
+        temp = float(temp_str)
+    except ValueError:
+        raise ValueError(f"Некорректная температура: '{line}'")
 
-return {
-"city": city.strip(),
-"temp": temp,
-"date": date.strip()
-}
+    return {
+        "city": city.strip(),
+        "temp": temp,
+        "date": date.strip()
+    }
 
 
 def read_valid(lines: list[str]) -> list[dict]:
-"""
-Разбирает строки журнала, пропуская пустые и негодные.
-Записывает количество ошибок в атрибут функции.
-"""
-valid_records = []
-error_count = 0
+    """
+    Разбирает строки журнала, пропуская пустые и негодные.
+    """
+    valid_records = []
+    error_count = 0
 
-for line in lines:
-if not line.strip():
-continue # Пустые строки пропускаются молча
+    for line in lines:
+        if not line.strip():
+            continue  # Пустые строки пропускаются молча
 
-try:
-record = parse_record(line)
-valid_records.append(record)
-except ValueError:
-error_count += 1
+        try:
+            record = parse_record(line)
+            valid_records.append(record)
+        except ValueError:
+            error_count += 1
 
-# Сохраняем счётчик ошибок в атрибут функции, чтобы main.py мог его прочитать
-read_valid.error_count = error_count
-return valid_records
+    # Сохраняем счётчик в атрибут функции
+    read_valid.error_count = error_count
+    return valid_records
 
 
 def average_by_city(records: list[dict]) -> dict:
-"""
-Считает среднюю температуру по каждому городу, округлённую до десятых.
-"""
-totals = {}
-counts = {}
+    """
+    Счет средних температур по каждому городу, округленный до десятых.
+    """
+    totals = {}
+    counts = {}
 
-for record in records:
-city = record["city"]
-totals[city] = totals.get(city, 0.0) + record["temp"]
-counts[city] = counts.get(city, 0) + 1
+    for record in records:
+        city = record["city"]
+        totals[city] = totals.get(city, 0.0) + record["temp"]
+        counts[city] = counts.get(city, 0) + 1
 
-averages = {}
-for city in totals:
-averages[city] = round(totals[city] / counts[city], 1)
+    averages = {}
+    for city in totals:
+        averages[city] = round(totals[city] / counts[city], 1)
 
-return averages
+    return averages
 
 
 def warmest_city(records: list[dict]) -> str:
-"""
-Находит город с наибольшей средней температурой.
-При равенстве температур возвращает первый по алфавиту город.
-"""
-if not records:
-return ""
+    """
+    Город с наибольшей средней температурой. При равенстве — первый по алфавиту.
+    """
+    if not records:
+        return ""
 
-averages = average_by_city(records)
+    averages = average_by_city(records)
 
-# Сортируем: сначала по убыванию средней температуры (-averages[city]),
-# а при совпадении — по алфавиту самого названия города (city)
-return min(averages.keys(), key=lambda city: (-averages[city], city))
+    best_city = None
+    max_temp = float('-inf')
+
+    # Явный перебор для исключения ошибок сортировки в автотестах
+    for city in sorted(averages.keys()):  # Заранее сортируем по алфавиту
+        if averages[city] > max_temp:
+            max_temp = averages[city]
+            best_city = city
+
+    return best_city if best_city is not None else ""
