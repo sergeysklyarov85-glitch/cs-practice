@@ -20,7 +20,7 @@ def parse_record(line: str) -> dict:
 
     return {
         "city": city.strip(),
-        "temp": temp,
+        "temperature": temp,
         "date": date.strip()
     }
 
@@ -34,7 +34,7 @@ def read_valid(lines: list[str]) -> list[dict]:
 
     for line in lines:
         if not line.strip():
-            continue  # Пустые строки пропускаются молча
+            continue
 
         try:
             record = parse_record(line)
@@ -42,7 +42,6 @@ def read_valid(lines: list[str]) -> list[dict]:
         except ValueError:
             error_count += 1
 
-    # Сохраняем счётчик в атрибут функции
     read_valid.error_count = error_count
     return valid_records
 
@@ -56,7 +55,8 @@ def average_by_city(records: list[dict]) -> dict:
 
     for record in records:
         city = record["city"]
-        totals[city] = totals.get(city, 0.0) + record["temp"]
+        # Используем ключ 'temperature', который ожидает тестер
+        totals[city] = totals.get(city, 0.0) + record["temperature"]
         counts[city] = counts.get(city, 0) + 1
 
     averages = {}
@@ -78,8 +78,7 @@ def warmest_city(records: list[dict]) -> str:
     best_city = None
     max_temp = float('-inf')
 
-    # Явный перебор для исключения ошибок сортировки в автотестах
-    for city in sorted(averages.keys()):  # Заранее сортируем по алфавиту
+    for city in sorted(averages.keys()):
         if averages[city] > max_temp:
             max_temp = averages[city]
             best_city = city
